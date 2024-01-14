@@ -1,5 +1,9 @@
 # makecli
 
+## it just works
+
+if it doesnt it tells you exactly what doesnt work and we can fix it
+
 ## introduction
 This package streamlines the process of adding Go-based CLI tools to your system. With minimal configuration, you can compile and add your Go programs to your system's PATH, making them easily accessible as command-line utilities. This tool is particularly useful for developers who frequently create and use custom CLI tools.
 
