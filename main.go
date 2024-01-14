@@ -51,14 +51,14 @@ func main() {
     var err error
     // Define command line flags
     binaryNamePtr := flag.String("name", "", "name of the tool/keyword to run your tool in the cli (required)")
-    mainFilePathPtr := flag.String("source", "", "path to the main go source code file (required)")
+    mainFilePathPtr := flag.String("source", "", "optional: path to the main go source code file (using github.com/m-c-frank as remote)")
     targetDirPtr := flag.String("destination", "", "optional: target directory (relative to home, defaults to $HOME)")
 
     // Parse command line flags
     flag.Parse()
 
     // Check if the required arguments are provided
-    if *binaryNamePtr == "" || *mainFilePathPtr == "" {
+    if *binaryNamePtr == "" {
         fmt.Println("Error: Missing required arguments.")
         flag.Usage()
         return
@@ -70,7 +70,7 @@ func main() {
     mainFilePath := *mainFilePathPtr
     targetDir, err := getTargetPath(targetDirPtr)
 
-    if !checkPath(binaryName) {
+    if !checkPath(binaryName) || *mainFilePathPtr == ""{
         cloneTool(binaryName)
     }
 
