@@ -30,7 +30,7 @@ curl https://github.com/m-c-frank/makecli | sh
 
 as long as your own go file does something you can use this to make it work everywhere
 
-1. `makecli -name "name of your tool" -source your-go-file.go
+1. `makecli -name "name of your tool" -source your-go-file.go`
 
 2. If the destination is not specified, the tool defaults to `$HOME/tools`.
 
@@ -39,14 +39,17 @@ as long as your own go file does something you can use this to make it work ever
 4. The tool's directory is automatically added to your PATH, making the tool available user-environment-wide.
 
 ## Example
+
 Add a new tool named "mytool":
 ```sh
 mkcli -name note -source main.go
 ```
 
 ## Notes
+
 - Ensure Go is properly installed and configured on your system.
 - Restart your terminal or source your profile (e.g., `source ~/.bashrc`) to apply PATH changes.
 
 ## Conclusion
+
 This package offers an efficient way to integrate Go-based tools into your CLI environment. It's a versatile solution for developers looking to enhance their productivity and streamline tool management.
