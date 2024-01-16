@@ -10,49 +10,12 @@ import (
     "path/filepath"
 )
 
-func getTargetPath(targetDirPtr *string) (string, error) {
-    var err error
-    if *targetDirPtr == "" {
-        targetDir, err:= os.UserHomeDir()
-        if err != nil {
-            fmt.Println("Error: ", err)
-            return "", err
-        }
-        return targetDir, err
-    }
-    targetDir := *targetDirPtr
-    return targetDir, err
-}
-
-func cloneTool(name string) error {
-    cmd := exec.Command("git", "clone", "https://github.com/m-c-frank/" + name)
-    cmd.Stdout = os.Stdout
-    cmd.Stderr = os.Stderr
-    err := cmd.Run()
-    if err != nil {
-            fmt.Println("Error: Unable to add file to Git staging.")
-            return err
-    }
-    return nil
-}
-
-func checkPath(path string) bool {
-    _, err := os.Stat(path)
-    if os.IsNotExist(err) {
-        return false
-    } else if err != nil {
-        fmt.Println("Error checking path:", err)
-        return false
-    }
-    return true
-}
-
 func main() {
     var err error
     // Define command line flags
     binaryNamePtr := flag.String("name", "", "name of the tool/keyword to run your tool in the cli (required)")
     mainFilePathPtr := flag.String("source", "", "optional: path to the main go source code file (using github.com/m-c-frank as remote)")
-    targetDirPtr := flag.String("destination", "", "optional: target directory (relative to home, defaults to $HOME)")
+    targetDirPtr := flag.String("destination", "", "optional: target directory (relative to home, defaults to $HOME/bin)")
 
     // Parse command line flags
     flag.Parse()
@@ -95,6 +58,45 @@ func main() {
     fmt.Println("Restart your Terminal or source ~/.bashrc")
     return
 }
+
+func getTargetPath(targetDirPtr *string) (string, error) {
+    var err error
+    if *targetDirPtr == "" {
+        homeDir, err:= os.UserHomeDir()
+        if err != nil {
+            fmt.Println("Error: ", err)
+            return "", err
+        }
+        targetDir := filepath.Join(homeDir, "bin")
+        return targetDir, err
+    }
+    targetDir := *targetDirPtr
+    return targetDir, err
+}
+
+func cloneTool(name string) error {
+    cmd := exec.Command("git", "clone", "https://github.com/m-c-frank/" + name)
+    cmd.Stdout = os.Stdout
+    cmd.Stderr = os.Stderr
+    err := cmd.Run()
+    if err != nil {
+            fmt.Println("Error: Unable to add file to Git staging.")
+            return err
+    }
+    return nil
+}
+
+func checkPath(path string) bool {
+    _, err := os.Stat(path)
+    if os.IsNotExist(err) {
+        return false
+    } else if err != nil {
+        fmt.Println("Error checking path:", err)
+        return false
+    }
+    return true
+}
+
 
 func buildAndSetupGoBinary(binaryName string, mainFilePath string, targetDir string, targetPath string) error {
     tempWorkDir, err := os.MkdirTemp("", "tempworkdir")
