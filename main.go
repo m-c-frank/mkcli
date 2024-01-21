@@ -4,7 +4,6 @@ import (
     "errors"
     "flag"
     "fmt"
-    "io"
     "os"
     "os/exec"
     "os/user"
@@ -12,7 +11,8 @@ import (
 )
 
 func main() {
-    var homeBinDir = "bin"
+    var destination = "bin"
+    var localMainPath = "main.go"
     var err error
 
     // Define command line flags
@@ -35,15 +35,16 @@ func main() {
     mainFilePath := *mainFilePathPtr
     targetDir := *targetDirPtr
 
-    targetDir, err = getTargetPath(targetDirPtr, homeBinDir)
+    targetDir, err = getTargetPath(targetDirPtr, destination)
     if err != nil {
         fmt.Println(err)
 	return
     }
 
     fmt.Printf("installing %s from %s to %s\n", binaryName, mainFilePath, targetDir)
+    fmt.Printf("checking if %s is equal to %s \n", mainFilePath, localMainPath)
 
-    if !checkPath(binaryName) || *mainFilePathPtr == ""{
+    if mainFilePath != localMainPath { 
 	fmt.Printf("cloning %s from github\n", binaryName)
         gitCloneTool(binaryName)
     }
@@ -56,10 +57,17 @@ func main() {
 	return
     }
 
-    fmt.Printf("building %s\n", binaryName)
-    err = buildAndSetupGoBinary(binaryName, mainFilePath, targetDir, targetPath)
+    fmt.Printf("building binary %s from %s in %s\n", binaryName, mainFilePath, targetPath)
+    _, err = buildBinary(mainFilePath, targetDir, binaryName)
     if err != nil {
-        fmt.Println("Error:", err)
+        fmt.Println(err)
+        return
+    }
+
+    fmt.Printf("ensuring %s is in path via .bashrc\n", targetDir)
+    err = ensurePathInUserEnv(targetDir)
+    if err != nil {
+        fmt.Println(err)
         return
     }
 
@@ -104,29 +112,6 @@ func checkPath(path string) bool {
         return false
     }
     return true
-}
-
-
-func buildAndSetupGoBinary(binaryName string, mainFilePath string, targetDir string, targetPath string) error {
-    tempWorkDir, err := os.MkdirTemp("", "tempworkdir")
-
-    fmt.Printf("building binary %s from %s in %s\n", binaryName, mainFilePath, tempWorkDir)
-    binaryPath, err := buildBinary(mainFilePath, tempWorkDir, binaryName)
-    if err != nil {
-        return err
-    }
-
-    err = copyFile(binaryPath, targetPath)
-    if err != nil {
-        return err
-    }
-
-    err = ensurePathInUserEnv(targetDir)
-    if err != nil {
-        return err
-    }
-
-    return err
 }
 
 // buildAndAddToPath compiles the Go program and adds the binary to ~/tools, then adds ~/tools to the PATH.
@@ -188,25 +173,4 @@ func isPathInEnvironment(path string) (bool, error) {
     }
 
     return false, nil
-}
-
-func copyFile(src, dst string) error {
-    sourceFile, err := os.Open(src)
-    if err != nil {
-        return err
-    }
-    defer sourceFile.Close()
-
-    destinationFile, err := os.Create(dst)
-    if err != nil {
-        return err
-    }
-    defer destinationFile.Close()
-
-    _, err = io.Copy(destinationFile, sourceFile)
-    if err != nil {
-        return err
-    }
-
-    return err
 }
